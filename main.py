@@ -33,25 +33,30 @@ def text_millions_to_number(number: str) -> float:
 
 def get_left_text(page: fitz.Page, rectangle: fitz.Rect) -> tuple[float, float, List[str], List[str], List[str], List[str], fitz.Rect, fitz.Rect, fitz.Rect, fitz.Rect]:
     debtRectangle = search_for("Total Debt", rectangle, page)
-    debtRaw = page.get_textbox(fitz.Rect(debtRectangle.x1,debtRectangle.y0,debtRectangle.x1+35,debtRectangle.y1)).splitlines()
+    debtRectangle = fitz.Rect(debtRectangle.x1,debtRectangle.y0,debtRectangle.x1+35,debtRectangle.y1)
+    debtRaw = page.get_textbox(debtRectangle).splitlines()
     debt = debtRaw[0].split("$")[1]
     debt = text_millions_to_number(debt)
 
     marketCapRectangle = search_for("MARKET CAP", rectangle, page)
-    marketCapRaw = page.get_textbox(fitz.Rect(marketCapRectangle.x1+3,marketCapRectangle.y0,marketCapRectangle.x1+35,marketCapRectangle.y1)).splitlines()
+    marketCapRectangle = fitz.Rect(marketCapRectangle.x1+3,marketCapRectangle.y0,marketCapRectangle.x1+35,marketCapRectangle.y1)
+    marketCapRaw = page.get_textbox(marketCapRectangle).splitlines()
     marketCap = marketCapRaw[0].split("$")[1]
     marketCap = text_millions_to_number(marketCap)
 
     salesGrowth = []
     salesRectangle = search_for("Sales", rectangle, page)
     if salesRectangle != fitz.Rect(0,0,0,0):
-        salesGrowth = page.get_textbox(fitz.Rect(salesRectangle.x0+82,salesRectangle.y0+3,salesRectangle.x0+135,salesRectangle.y1-3)).splitlines()
+        salesRectangle = fitz.Rect(salesRectangle.x0+82,salesRectangle.y0+3,salesRectangle.x0+135,salesRectangle.y1-3)
+        salesGrowth = page.get_textbox(salesRectangle).splitlines()
     else:
         salesRectangle = search_for("Revenue", rectangle, page)
-        salesGrowth = page.get_textbox(fitz.Rect(salesRectangle.x0+82,salesRectangle.y0+3,salesRectangle.x0+135,salesRectangle.y1-3)).splitlines()
+        salesRectangle = fitz.Rect(salesRectangle.x0+82,salesRectangle.y0+3,salesRectangle.x0+135,salesRectangle.y1-3)
+        salesGrowth = page.get_textbox(salesRectangle).splitlines()
 
     earningsRectangle = search_for("Earnings", rectangle, page)
-    earningsGrowth = page.get_textbox(fitz.Rect(earningsRectangle.x0+82,earningsRectangle.y0+3,earningsRectangle.x0+135,earningsRectangle.y1-3)).splitlines()
+    earningsRectangle = fitz.Rect(earningsRectangle.x0+82,earningsRectangle.y0+3,earningsRectangle.x0+135,earningsRectangle.y1-3)
+    earningsGrowth = page.get_textbox(earningsRectangle).splitlines()
     return (debt, marketCap, salesGrowth, earningsGrowth, debtRaw, marketCapRaw, debtRectangle, marketCapRectangle, salesRectangle, earningsRectangle)
 
 def consecutive_growth(list: List[str]) -> int:
@@ -139,51 +144,61 @@ def get_text(page: fitz.Page):
     print("Q2  - timeliness ")
     print(timeliness)
     print(timelinessText)
+    page.add_highlight_annot(timelinessRect)
 
     print("")
     print("Q3  - safety " )
     print(safety)
     print(safetyText)
+    page.add_highlight_annot(safetyRect)
 
     print("")
     print("Q4a - debt ")
     print(debt)
     print(debtRaw)
+    page.add_highlight_annot(debtRectangle)
 
     print("")
     print("Q4b - market cap ")
     print(marketCap)
     print(marketCapRaw)
+    page.add_highlight_annot(marketCapRectangle)
 
     print("")
     print("Q5  - beta")
     print(beta)
     print(betaText)
+    page.add_highlight_annot(betaRect)
 
     print("")
     print("Q6a - %growth in sales last 5 years")
     print(salesGrowth[0])
     print(salesGrowth)
+    page.add_highlight_annot(salesRectangle)
 
     print("")
     print("Q6b - years of consecutive sales growth")
     print(salesConsecutiveGrowth)
     print(salesRaw)
+    page.add_highlight_annot(salesRect)
 
     print("")
     print("Q6c - %growth in earnings last 5 years")
     print(earningsGrowth[0])
     print(earningsGrowth)
+    page.add_highlight_annot(earningsRectangle)
 
     print("")
     print("Q6d - years of consecutive earnings growth")
     print(earningsPerShareConsecutiveGrowth)
     print(earningsPerShareRaw)
+    page.add_highlight_annot(earningsPerShareRect)
 
     print("")
     print("Q6e - projected sales")
     print(projectedSales)
     print(projectedSalesRaw)
+    page.add_highlight_annot(projectedSalesRect)
 
     print("")
     print("Q6f - %projected growth in sales")
@@ -199,17 +214,23 @@ def get_text(page: fitz.Page):
     print("Q7a - consecutive net profit growth")
     print(netProfitConsecutiveGrowth)
     print(netProfitRaw)
+    page.add_highlight_annot(netProfitRect)
 
     print("")
     print("Q8  - rating")
     print(rating)
     print(ratingText)
+    page.add_highlight_annot(ratingRect)
 
     
 
-doc1 = fitz.open("/Users/nina/Downloads/download/VL KO 2301.pdf")  # any supported document type
-doc2 = fitz.open("/Users/nina/Downloads/download/VL META 2302.pdf")
-doc3 = fitz.open("/Users/nina/Downloads/download/VL ANF 2301.pdf")
+doc1name = "/home/vlada/Desktop/VL KO 2301.pdf"
+doc2name = "/home/vlada/Desktop/VL META 2302.pdf"
+doc3name = "/home/vlada/Desktop/VL ANF 2301.pdf"
+
+doc1 = fitz.open(doc1name)  # any supported document type
+doc2 = fitz.open(doc2name)
+doc3 = fitz.open(doc3name)
 
 page1 = doc1[0]
 page2 = doc2[0]
@@ -238,3 +259,7 @@ get_text(page2)
 print("")
 print("ABERCROMBIE:")
 get_text(page3)
+
+doc1.save(doc1name.rstrip(".pdf") + "-tmp.pdf")
+doc2.save(doc2name.rstrip(".pdf") + "-tmp.pdf")
+doc3.save(doc3name.rstrip(".pdf") + "-tmp.pdf")
