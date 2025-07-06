@@ -11,6 +11,7 @@ There also is no logic that maintains natural reading order, so text will
 appear as stored in the document.
 
 """
+from os import P_ALL
 from typing import List
 import fitz
 
@@ -74,34 +75,25 @@ def consecutive_growth(list: List[str]) -> int:
 
 
 def get_right_text(page: fitz.Page) -> tuple[str, int, int, int, List[str], List[str], List[str], List[str], fitz.Rect, fitz.Rect, fitz.Rect, fitz.Rect]:
-    rightText = page.get_textbox(rightRect).splitlines()
-    i = 0
-    salesHeight = 0
-    earningsPerShareHeight = 0
-    netProfitHeight = 0
+    salesHeight = search_for("Revenues (", rightRect, page)
+    if salesHeight == fitz.Rect(0,0,0,0):
+        salesHeight = search_for("Sales (", rightRect, page)
+    earningsPerShareHeight = search_for("Earnings per sh", rightRect, page)
+    netProfitHeight = search_for("Net Profit (", rightRect, page)
 
-    for line in rightText:
-        if line.__contains__("Revenues (") or line.__contains__("Sales ("):
-            salesHeight = 215 + i * 9
-        if line.__contains__("Earnings per sh"):
-            earningsPerShareHeight = 215 + i * 9
-        if line.__contains__("Net Profit ("):
-            netProfitHeight = 215 + i * 9
-        i = i+1
-
-    projectedSalesRect = fitz.Rect(550, salesHeight + 3, 569, salesHeight + 5)
+    projectedSalesRect = fitz.Rect(550, salesHeight.y0, 569, salesHeight.y1)
     projectedSalesRaw = page.get_textbox(projectedSalesRect).splitlines()
     projectedSales = projectedSalesRaw[0]
 
-    salesRect = fitz.Rect(310, salesHeight + 3, 430, salesHeight + 5)
+    salesRect = fitz.Rect(310, salesHeight.y0, 430, salesHeight.y1)
     salesRaw = page.get_textbox(salesRect).splitlines()
     salesConsecutiveGrowth = consecutive_growth(salesRaw)
 
-    earningsPerShareRect = fitz.Rect(310, earningsPerShareHeight + 3, 430, earningsPerShareHeight + 5)
+    earningsPerShareRect = fitz.Rect(310, earningsPerShareHeight.y0, 430, earningsPerShareHeight.y1)
     earningsPerShareRaw = page.get_textbox(earningsPerShareRect).splitlines() 
     earningsPerShareConsecutiveGrowth = consecutive_growth(earningsPerShareRaw)
 
-    netProfitRect = fitz.Rect(310, netProfitHeight + 3, 430, netProfitHeight + 5)
+    netProfitRect = fitz.Rect(310, netProfitHeight.y0, 430, netProfitHeight.y1)
     netProfitRaw = page.get_textbox(netProfitRect).splitlines()
     netProfitConsecutiveGrowth = consecutive_growth(netProfitRaw)
 
