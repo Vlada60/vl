@@ -48,15 +48,15 @@ def get_left_text(page: fitz.Page, rectangle: fitz.Rect) -> tuple[float, float, 
     salesGrowth = []
     salesRectangle = search_for("Sales", rectangle, page)
     if salesRectangle != fitz.Rect(0,0,0,0):
-        salesRectangle = fitz.Rect(salesRectangle.x0+82,salesRectangle.y0+3,salesRectangle.x0+135,salesRectangle.y1-3)
+        salesRectangle = fitz.Rect(salesRectangle.x0+82,salesRectangle.y0+2,salesRectangle.x0+135,salesRectangle.y1-3)
         salesGrowth = page.get_textbox(salesRectangle).splitlines()
     else:
         salesRectangle = search_for("Revenue", rectangle, page)
-        salesRectangle = fitz.Rect(salesRectangle.x0+82,salesRectangle.y0+3,salesRectangle.x0+135,salesRectangle.y1-3)
+        salesRectangle = fitz.Rect(salesRectangle.x0+82,salesRectangle.y0+2,salesRectangle.x0+135,salesRectangle.y1-3)
         salesGrowth = page.get_textbox(salesRectangle).splitlines()
 
     earningsRectangle = search_for("Earnings", rectangle, page)
-    earningsRectangle = fitz.Rect(earningsRectangle.x0+82,earningsRectangle.y0+3,earningsRectangle.x0+135,earningsRectangle.y1-3)
+    earningsRectangle = fitz.Rect(earningsRectangle.x0+82,earningsRectangle.y0+2,earningsRectangle.x0+135,earningsRectangle.y1-3)
     earningsGrowth = page.get_textbox(earningsRectangle).splitlines()
     return (debt, marketCap, salesGrowth, earningsGrowth, debtRaw, marketCapRaw, debtRectangle, marketCapRectangle, salesRectangle, earningsRectangle)
 
@@ -99,22 +99,8 @@ def get_right_text(page: fitz.Page) -> tuple[str, int, int, int, List[str], List
 
     return (projectedSales, salesConsecutiveGrowth, earningsPerShareConsecutiveGrowth, netProfitConsecutiveGrowth, projectedSalesRaw,salesRaw, earningsPerShareRaw, netProfitRaw, projectedSalesRect, salesRect,earningsPerShareRect,netProfitRect)
 
-    # print("")
-    # print("projected sales")
-    # print(projectedSales)
-    # print("")
-    # print("sales")
-    # print(consecutive_growth(sales))
-    # print(sales)
-    # print("")
-    # print("earnings per share")
-    # print(consecutive_growth(earningsPerShare))
-    # print(earningsPerShare)
-    # print("")
-    # print("net profit")
-    # print(consecutive_growth(netProfit))
-    # print(netProfit)
-
+def add_text_annot_above(text: str, rect: fitz.Rect, page: fitz.Page):
+    page.add_freetext_annot(fitz.Rect(rect.x0, rect.y0 - 6, rect.x1 + 10, rect.y0 - 1), text, text_color=(1,0,0),fontsize=6,fill_color=(1,1,1))
 
 def get_text(page: fitz.Page):
     timelinessText = page.get_textbox(timelinessRect).splitlines()
@@ -137,82 +123,102 @@ def get_text(page: fitz.Page):
     print(timeliness)
     print(timelinessText)
     page.add_highlight_annot(timelinessRect)
+    add_text_annot_above(timeliness,timelinessRect,page)
 
     print("")
     print("Q3  - safety " )
     print(safety)
     print(safetyText)
     page.add_highlight_annot(safetyRect)
+    add_text_annot_above(safety,safetyRect,page)
 
     print("")
     print("Q4a - debt ")
     print(debt)
     print(debtRaw)
     page.add_highlight_annot(debtRectangle)
+    add_text_annot_above(str(debt) + " bill",debtRectangle,page)
 
     print("")
     print("Q4b - market cap ")
     print(marketCap)
     print(marketCapRaw)
     page.add_highlight_annot(marketCapRectangle)
+    add_text_annot_above(str(marketCap) + " bill",marketCapRectangle,page)
 
     print("")
     print("Q5  - beta")
     print(beta)
     print(betaText)
     page.add_highlight_annot(betaRect)
+    add_text_annot_above(beta, betaRect, page)
 
     print("")
     print("Q6a - %growth in sales last 5 years")
     print(salesGrowth[0])
     print(salesGrowth)
     page.add_highlight_annot(salesRectangle)
+    add_text_annot_above(salesGrowth[0], salesRectangle, page)
 
     print("")
     print("Q6b - years of consecutive sales growth")
     print(salesConsecutiveGrowth)
     print(salesRaw)
     page.add_highlight_annot(salesRect)
+    add_text_annot_above(str(salesRaw),salesRect, page)
+    page.add_line_annot(fitz.Point(salesRect.x1 - 25.5 - salesConsecutiveGrowth*24, salesRect.y0),fitz.Point(salesRect.x1 - 25.5 - salesConsecutiveGrowth*24, salesRect.y1 + 10))
+    page.add_line_annot(fitz.Point(salesRect.x1, salesRect.y1),fitz.Point(salesRect.x1 + 130, salesRect.y1))
 
     print("")
     print("Q6c - %growth in earnings last 5 years")
     print(earningsGrowth[0])
     print(earningsGrowth)
     page.add_highlight_annot(earningsRectangle)
+    add_text_annot_above(earningsGrowth[0], earningsRectangle, page)
 
     print("")
     print("Q6d - years of consecutive earnings growth")
     print(earningsPerShareConsecutiveGrowth)
     print(earningsPerShareRaw)
     page.add_highlight_annot(earningsPerShareRect)
+    add_text_annot_above(str(earningsPerShareRaw),earningsPerShareRect, page)
+    page.add_line_annot(fitz.Point(earningsPerShareRect.x1 - 25.5 - earningsPerShareConsecutiveGrowth*24, earningsPerShareRect.y0),fitz.Point(earningsPerShareRect.x1 - 25.5 - earningsPerShareConsecutiveGrowth*24, earningsPerShareRect.y1 + 10))
+    page.add_line_annot(fitz.Point(earningsPerShareRect.x1, earningsPerShareRect.y1),fitz.Point(earningsPerShareRect.x1 + 100, earningsPerShareRect.y1))
 
     print("")
     print("Q6e - projected sales")
     print(projectedSales)
     print(projectedSalesRaw)
     page.add_highlight_annot(projectedSalesRect)
+    add_text_annot_above(projectedSales,projectedSalesRect,page)
 
     print("")
     print("Q6f - %projected growth in sales")
     print(salesGrowth[1])
     print(salesGrowth)
+    add_text_annot_above(salesGrowth[1], fitz.Rect(salesRectangle.x0 + 30,salesRectangle.y0,salesRectangle.x1 + 30,salesRectangle.y1), page)
 
     print("")
     print("Q6g - %projected growth in earnings")
     print(earningsGrowth[1])
     print(earningsGrowth)
+    add_text_annot_above(earningsGrowth[1], fitz.Rect(earningsRectangle.x0 + 30,earningsRectangle.y0,earningsRectangle.x1 + 30,earningsRectangle.y1), page)
 
     print("")
     print("Q7a - consecutive net profit growth")
     print(netProfitConsecutiveGrowth)
     print(netProfitRaw)
     page.add_highlight_annot(netProfitRect)
+    add_text_annot_above(str(netProfitRaw),netProfitRect, page)
+    page.add_line_annot(fitz.Point(netProfitRect.x1 - 25.5 - netProfitConsecutiveGrowth*24, netProfitRect.y0),fitz.Point(netProfitRect.x1 - 25.5 - netProfitConsecutiveGrowth*24, netProfitRect.y1 + 10))
+    page.add_line_annot(fitz.Point(netProfitRect.x1, netProfitRect.y1),fitz.Point(netProfitRect.x1 + 100, netProfitRect.y1))
 
     print("")
     print("Q8  - rating")
     print(rating)
     print(ratingText)
     page.add_highlight_annot(ratingRect)
+    add_text_annot_above(rating, ratingRect, page)
 
     
 
@@ -233,7 +239,7 @@ page3 = doc3[0]
 Identify the rectangle.
 -------------------------------------------------------------------------------
 """
-timelinessRect = fitz.Rect(88,58,90,60)
+timelinessRect = fitz.Rect(88,55,90,60)
 safetyRect = fitz.Rect(88,68,90,74) 
 betaRect = fitz.Rect(62,91.5,75,97.5) 
 ratingRect = fitz.Rect(550,725.5,563,731)
