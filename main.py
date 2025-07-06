@@ -11,6 +11,7 @@ There also is no logic that maintains natural reading order, so text will
 appear as stored in the document.
 
 """
+from typing import List
 import fitz
 
 def search_for(text, rectangle: fitz.Rect, page: fitz.Page) -> fitz.Rect:
@@ -20,47 +21,54 @@ def search_for(text, rectangle: fitz.Rect, page: fitz.Page) -> fitz.Rect:
     else:
         return fitz.Rect(0,0,0,0)
 
-def text_millions_in_number(number: str) -> float:
+def text_millions_to_number(number: str) -> float:
     tmp = number.split()
     if tmp[1].__contains__("bill"):
         return float(tmp[0].replace(",",""))
     elif tmp[1].__contains__("mill"):
         return float(tmp[0].replace(",",""))/1000
+    elif tmp[1].__contains__("trill"):
+        return float(tmp[0].replace(",",""))*1000
     return 0
 
-def get_left_text(page: fitz.Page, rectangle: fitz.Rect):
+def get_left_text(page: fitz.Page, rectangle: fitz.Rect) -> tuple[float, float, List[str], List[str], List[str], List[str], fitz.Rect, fitz.Rect, fitz.Rect, fitz.Rect]:
     debtRectangle = search_for("Total Debt", rectangle, page)
-    debt = page.get_textbox(fitz.Rect(debtRectangle.x1,debtRectangle.y0,debtRectangle.x1+35,debtRectangle.y1)).splitlines()
-    debt = debt[0].split("$")[1]
-    print("")
-    print(debt)
-    print(text_millions_in_number(debt))
+    debtRaw = page.get_textbox(fitz.Rect(debtRectangle.x1,debtRectangle.y0,debtRectangle.x1+35,debtRectangle.y1)).splitlines()
+    debt = debtRaw[0].split("$")[1]
+    debt = text_millions_to_number(debt)
 
     marketCapRectangle = search_for("MARKET CAP", rectangle, page)
-    marketCap = page.get_textbox(fitz.Rect(marketCapRectangle.x1+3,marketCapRectangle.y0,marketCapRectangle.x1+35,marketCapRectangle.y1)).splitlines()
-    marketCap = marketCap[0].split("$")[1]
-    print("")
-    print(marketCap)
-    print(text_millions_in_number(marketCap))
+    marketCapRaw = page.get_textbox(fitz.Rect(marketCapRectangle.x1+3,marketCapRectangle.y0,marketCapRectangle.x1+35,marketCapRectangle.y1)).splitlines()
+    marketCap = marketCapRaw[0].split("$")[1]
+    marketCap = text_millions_to_number(marketCap)
 
+    salesGrowth = []
     salesRectangle = search_for("Sales", rectangle, page)
     if salesRectangle != fitz.Rect(0,0,0,0):
-        sales = page.get_textbox(fitz.Rect(salesRectangle.x0+82,salesRectangle.y0+3,salesRectangle.x0+135,salesRectangle.y1-3)).splitlines()
-        print("")
-        print(sales)
+        salesGrowth = page.get_textbox(fitz.Rect(salesRectangle.x0+82,salesRectangle.y0+3,salesRectangle.x0+135,salesRectangle.y1-3)).splitlines()
     else:
         salesRectangle = search_for("Revenue", rectangle, page)
-        sales = page.get_textbox(fitz.Rect(salesRectangle.x0+82,salesRectangle.y0+3,salesRectangle.x0+135,salesRectangle.y1-3)).splitlines()
-        print("")
-        print(sales)
+        salesGrowth = page.get_textbox(fitz.Rect(salesRectangle.x0+82,salesRectangle.y0+3,salesRectangle.x0+135,salesRectangle.y1-3)).splitlines()
 
     earningsRectangle = search_for("Earnings", rectangle, page)
-    earnings = page.get_textbox(fitz.Rect(earningsRectangle.x0+82,earningsRectangle.y0+3,earningsRectangle.x0+135,earningsRectangle.y1-3)).splitlines()
-    print("")
-    print(earnings)
+    earningsGrowth = page.get_textbox(fitz.Rect(earningsRectangle.x0+82,earningsRectangle.y0+3,earningsRectangle.x0+135,earningsRectangle.y1-3)).splitlines()
+    return (debt, marketCap, salesGrowth, earningsGrowth, debtRaw, marketCapRaw, debtRectangle, marketCapRectangle, salesRectangle, earningsRectangle)
+
+def consecutive_growth(list: List[str]) -> int:
+    lenght = len(list)
+    previous = float(list[lenght-1].lstrip("d"))
+    growth = 0
+    for i in range(len(list)-2, -1, -1):
+        current = float(list[i].lstrip("d"))
+        if current < previous:
+            previous = current 
+            growth = growth + 1; 
+        else:
+            break
+    return growth
 
 
-def get_right_text(page: fitz.Page):
+def get_right_text(page: fitz.Page) -> tuple[str, int, int, int, List[str], List[str], List[str], List[str], fitz.Rect, fitz.Rect, fitz.Rect, fitz.Rect]:
     rightText = page.get_textbox(rightRect).splitlines()
     i = 0
     salesHeight = 0
@@ -77,60 +85,126 @@ def get_right_text(page: fitz.Page):
         i = i+1
 
     projectedSalesRect = fitz.Rect(550, salesHeight + 3, 569, salesHeight + 5)
-    projectedSales = page.get_textbox(projectedSalesRect).splitlines()
+    projectedSalesRaw = page.get_textbox(projectedSalesRect).splitlines()
+    projectedSales = projectedSalesRaw[0]
 
     salesRect = fitz.Rect(310, salesHeight + 3, 430, salesHeight + 5)
-    sales = page.get_textbox(salesRect).splitlines()
+    salesRaw = page.get_textbox(salesRect).splitlines()
+    salesConsecutiveGrowth = consecutive_growth(salesRaw)
 
     earningsPerShareRect = fitz.Rect(310, earningsPerShareHeight + 3, 430, earningsPerShareHeight + 5)
-    earningsPerShare = page.get_textbox(earningsPerShareRect).splitlines() 
+    earningsPerShareRaw = page.get_textbox(earningsPerShareRect).splitlines() 
+    earningsPerShareConsecutiveGrowth = consecutive_growth(earningsPerShareRaw)
 
     netProfitRect = fitz.Rect(310, netProfitHeight + 3, 430, netProfitHeight + 5)
-    netProfit = page.get_textbox(netProfitRect).splitlines()
+    netProfitRaw = page.get_textbox(netProfitRect).splitlines()
+    netProfitConsecutiveGrowth = consecutive_growth(netProfitRaw)
 
-    print("")
-    print("projected sales")
-    print(projectedSales)
-    print("")
-    print("sales")
-    print(sales)
-    print("")
-    print("earnings per share")
-    print(earningsPerShare)
-    print("")
-    print("net profit")
-    print(netProfit)
+    return (projectedSales, salesConsecutiveGrowth, earningsPerShareConsecutiveGrowth, netProfitConsecutiveGrowth, projectedSalesRaw,salesRaw, earningsPerShareRaw, netProfitRaw, projectedSalesRect, salesRect,earningsPerShareRect,netProfitRect)
+
+    # print("")
+    # print("projected sales")
+    # print(projectedSales)
+    # print("")
+    # print("sales")
+    # print(consecutive_growth(sales))
+    # print(sales)
+    # print("")
+    # print("earnings per share")
+    # print(consecutive_growth(earningsPerShare))
+    # print(earningsPerShare)
+    # print("")
+    # print("net profit")
+    # print(consecutive_growth(netProfit))
+    # print(netProfit)
+
 
 def get_text(page: fitz.Page):
-    timelinessText = page.get_textbox(timelinessRect).splitlines() 
-    timeliness = int(timelinessText[0])
+    timelinessText = page.get_textbox(timelinessRect).splitlines()
+    timeliness = timelinessText[0].lstrip().rstrip()
 
     safetyText = page.get_textbox(safetyRect).splitlines()
-    safety = int(safetyText[0])
+    safety = safetyText[0].lstrip().rstrip()
 
     betaText = page.get_textbox(betaRect).splitlines()
-    beta = float(betaText[0])
+    beta = betaText[0].lstrip().rstrip()
 
-    rating = page.get_textbox(ratingRect).splitlines()
+    ratingText = page.get_textbox(ratingRect).splitlines()
+    rating = ratingText[0].lstrip().rstrip()
+
+    (debt, marketCap, salesGrowth, earningsGrowth, debtRaw, marketCapRaw, debtRectangle, marketCapRectangle, salesRectangle, earningsRectangle) = get_left_text(page, leftRect)
+    (projectedSales, salesConsecutiveGrowth, earningsPerShareConsecutiveGrowth, netProfitConsecutiveGrowth, projectedSalesRaw,salesRaw, earningsPerShareRaw, netProfitRaw, projectedSalesRect, salesRect,earningsPerShareRect,netProfitRect) = get_right_text(page)
 
     print("")
-    print("temiliness ")
+    print("Q2  - timeliness ")
     print(timeliness)
+    print(timelinessText)
 
     print("")
-    print("safety " )
+    print("Q3  - safety " )
     print(safety)
+    print(safetyText)
 
     print("")
-    print("beta")
+    print("Q4a - debt ")
+    print(debt)
+    print(debtRaw)
+
+    print("")
+    print("Q4b - market cap ")
+    print(marketCap)
+    print(marketCapRaw)
+
+    print("")
+    print("Q5  - beta")
     print(beta)
+    print(betaText)
 
     print("")
-    print("rating")
-    print(rating[0])
+    print("Q6a - %growth in sales last 5 years")
+    print(salesGrowth[0])
+    print(salesGrowth)
 
-    get_left_text(page, leftRect)
-    get_right_text(page)
+    print("")
+    print("Q6b - years of consecutive sales growth")
+    print(salesConsecutiveGrowth)
+    print(salesRaw)
+
+    print("")
+    print("Q6c - %growth in earnings last 5 years")
+    print(earningsGrowth[0])
+    print(earningsGrowth)
+
+    print("")
+    print("Q6d - years of consecutive earnings growth")
+    print(earningsPerShareConsecutiveGrowth)
+    print(earningsPerShareRaw)
+
+    print("")
+    print("Q6e - projected sales")
+    print(projectedSales)
+    print(projectedSalesRaw)
+
+    print("")
+    print("Q6f - %projected growth in sales")
+    print(salesGrowth[1])
+    print(salesGrowth)
+
+    print("")
+    print("Q6g - %projected growth in earnings")
+    print(earningsGrowth[1])
+    print(earningsGrowth)
+
+    print("")
+    print("Q7a - consecutive net profit growth")
+    print(netProfitConsecutiveGrowth)
+    print(netProfitRaw)
+
+    print("")
+    print("Q8  - rating")
+    print(rating)
+    print(ratingText)
+
     
 
 doc1 = fitz.open("/Users/nina/Downloads/download/VL KO 2301.pdf")  # any supported document type
@@ -162,5 +236,5 @@ print("")
 print("Meta:")
 get_text(page2)
 print("")
-print("A:")
+print("ABERCROMBIE:")
 get_text(page3)
