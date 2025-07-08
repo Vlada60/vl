@@ -18,36 +18,25 @@ def text_millions_to_number(number: str) -> float:
         return float(tmp[0].replace(",",""))*1000
     return 0
 
-def get_left_text(page: fitz.Page, rectangle: fitz.Rect) -> tuple[float, float, List[str], List[str], List[str], List[str], fitz.Rect, fitz.Rect, fitz.Rect, fitz.Rect]:
-    debtRectangle = search_for("Total Debt", rectangle, page)
-    debtRectangle = fitz.Rect(debtRectangle.x1,debtRectangle.y0,debtRectangle.x1+35,debtRectangle.y1)
-    debtRaw = page.get_textbox(debtRectangle).splitlines()
+def get_left_text(page: fitz.Page, debtRect: fitz.Rect, marketCapRect: fitz.Rect, salesRect: fitz.Rect, earningsRect) -> tuple[float, float, List[str], List[str], List[str], List[str]]:
+    debtRaw = page.get_textbox(debtRect).splitlines()
     try:
         debt = debtRaw[0].split("$")[1]
+        debt = text_millions_to_number(debt)
     except:
         print("\033[91mError:\033[0m Debt was not able to be extracted")
-        debt = "error error"
-    debt = text_millions_to_number(debt)
+        debt = -1
 
-    marketCapRectangle = search_for("MARKET CAP", rectangle, page)
-    marketCapRectangle = fitz.Rect(marketCapRectangle.x1+3,marketCapRectangle.y0,marketCapRectangle.x1+35,marketCapRectangle.y1)
-    marketCapRaw = page.get_textbox(marketCapRectangle).splitlines()
+    marketCapRaw = page.get_textbox(marketCapRect).splitlines()
     try:
         marketCap = marketCapRaw[0].split("$")[1]
+        marketCap = text_millions_to_number(marketCap)
     except:
         print("\033[91mError:\033[0m Market Cap was not able to be extracted")
-        marketCap = "error error"
-    marketCap = text_millions_to_number(marketCap)
+        marketCap = -1
 
     salesGrowth = []
-    salesRectangle = search_for("Sales", rectangle, page)
-    if salesRectangle != fitz.Rect(0,0,0,0):
-        salesRectangle = fitz.Rect(salesRectangle.x0+82,salesRectangle.y0+2,salesRectangle.x0+135,salesRectangle.y1-3)
-        salesGrowth = page.get_textbox(salesRectangle).splitlines()
-    else:
-        salesRectangle = search_for("Revenue", rectangle, page)
-        salesRectangle = fitz.Rect(salesRectangle.x0+82,salesRectangle.y0+2,salesRectangle.x0+135,salesRectangle.y1-3)
-        salesGrowth = page.get_textbox(salesRectangle).splitlines()
+    salesGrowth = page.get_textbox(salesRect).splitlines()
 
     try :
         salesGrowth[0]
@@ -60,9 +49,7 @@ def get_left_text(page: fitz.Page, rectangle: fitz.Rect) -> tuple[float, float, 
         print("\033[91mError:\033[0m Sales growth prediction not found")
         salesGrowth[1] = "error"
 
-    earningsRectangle = search_for("Earnings", rectangle, page)
-    earningsRectangle = fitz.Rect(earningsRectangle.x0+82,earningsRectangle.y0+2,earningsRectangle.x0+135,earningsRectangle.y1-3)
-    earningsGrowth = page.get_textbox(earningsRectangle).splitlines()
+    earningsGrowth = page.get_textbox(earningsRect).splitlines()
 
     try :
         earningsGrowth[0]
@@ -75,7 +62,7 @@ def get_left_text(page: fitz.Page, rectangle: fitz.Rect) -> tuple[float, float, 
         print("\033[91mError:\033[0m Earnings Growth prediction not found")
         earningsGrowth[1] = "error"
 
-    return (debt, marketCap, salesGrowth, earningsGrowth, debtRaw, marketCapRaw, debtRectangle, marketCapRectangle, salesRectangle, earningsRectangle)
+    return (debt, marketCap, salesGrowth, earningsGrowth, debtRaw, marketCapRaw)
 
 def consecutive_growth(list: List[str]) -> int:
     lenght = len(list)
@@ -99,14 +86,7 @@ def consecutive_growth(list: List[str]) -> int:
     return growth
 
 
-def get_right_text(page: fitz.Page) -> tuple[str, int, int, int, List[str], List[str], List[str], List[str], fitz.Rect, fitz.Rect, fitz.Rect, fitz.Rect]:
-    salesHeight = search_for("Revenues (", rightRect, page)
-    if salesHeight == fitz.Rect(0,0,0,0):
-        salesHeight = search_for("Sales (", rightRect, page)
-    earningsPerShareHeight = search_for("Earnings per sh", rightRect, page)
-    netProfitHeight = search_for("Net Profit (", rightRect, page)
-
-    projectedSalesRect = fitz.Rect(550, salesHeight.y0, 569, salesHeight.y1)
+def get_right_text(page: fitz.Page, projectedSalesRect: fitz.Rect, salesRect: fitz.Rect, earningsPerShareRect: fitz.Rect, netProfitRect: fitz.Rect) -> tuple[str, int, int, int, List[str], List[str], List[str], List[str]]:
     projectedSalesRaw = page.get_textbox(projectedSalesRect).splitlines()
     try:
         projectedSales = projectedSalesRaw[0]
@@ -114,22 +94,46 @@ def get_right_text(page: fitz.Page) -> tuple[str, int, int, int, List[str], List
         print("\033[91mError:\033[0m Debt was not able to be extracted")
         projectedSales = "error"
 
-    salesRect = fitz.Rect(310, salesHeight.y0, 430, salesHeight.y1)
     salesRaw = page.get_textbox(salesRect).splitlines()
     salesConsecutiveGrowth = consecutive_growth(salesRaw)
-
-    earningsPerShareRect = fitz.Rect(310, earningsPerShareHeight.y0, 430, earningsPerShareHeight.y1)
+        
     earningsPerShareRaw = page.get_textbox(earningsPerShareRect).splitlines() 
     earningsPerShareConsecutiveGrowth = consecutive_growth(earningsPerShareRaw)
 
-    netProfitRect = fitz.Rect(310, netProfitHeight.y0, 430, netProfitHeight.y1)
     netProfitRaw = page.get_textbox(netProfitRect).splitlines()
     netProfitConsecutiveGrowth = consecutive_growth(netProfitRaw)
 
-    return (projectedSales, salesConsecutiveGrowth, earningsPerShareConsecutiveGrowth, netProfitConsecutiveGrowth, projectedSalesRaw,salesRaw, earningsPerShareRaw, netProfitRaw, projectedSalesRect, salesRect,earningsPerShareRect,netProfitRect)
+    return (projectedSales, salesConsecutiveGrowth, earningsPerShareConsecutiveGrowth, netProfitConsecutiveGrowth, projectedSalesRaw,salesRaw, earningsPerShareRaw, netProfitRaw)
 
 def add_text_annot_above(text: str, rect: fitz.Rect, page: fitz.Page):
     page.add_freetext_annot(fitz.Rect(rect.x0, rect.y0 - 6, rect.x1 + 10, rect.y0 - 1), text, text_color=(1,0,0),fontsize=6,fill_color=(1,1,1))
+
+def get_rectangles(page: fitz.Page) -> tuple[fitz.Rect,fitz.Rect,fitz.Rect,fitz.Rect,fitz.Rect,fitz.Rect,fitz.Rect,fitz.Rect]:
+    salesHeight = search_for("Revenues (", rightRect, page)
+    if salesHeight == fitz.Rect(0,0,0,0):
+        salesHeight = search_for("Sales (", rightRect, page)
+    earningsPerShareHeight = search_for("Earnings per sh", rightRect, page)
+    netProfitHeight = search_for("Net Profit (", rightRect, page)
+
+    projectedSalesRect = fitz.Rect(550, salesHeight.y0, 569, salesHeight.y1)
+    salesRect = fitz.Rect(310, salesHeight.y0, 430, salesHeight.y1)
+    earningsPerShareRect = fitz.Rect(310, earningsPerShareHeight.y0, 430, earningsPerShareHeight.y1)
+    netProfitRect = fitz.Rect(310, netProfitHeight.y0, 430, netProfitHeight.y1)
+
+    debtRect = search_for("Total Debt", leftRect, page)
+    debtRect = fitz.Rect(debtRect.x1,debtRect.y0,debtRect.x1+35,debtRect.y1)
+    marketCapRect = search_for("MARKET CAP", leftRect, page)
+    marketCapRect = fitz.Rect(marketCapRect.x1+3,marketCapRect.y0,marketCapRect.x1+35,marketCapRect.y1)
+    earningsRect = search_for("Earnings", leftRect, page)
+    earningsRect = fitz.Rect(earningsRect.x0+82,earningsRect.y0+2,earningsRect.x0+135,earningsRect.y1-3)
+    salesGrowthRect = search_for("Sales", leftRect, page)
+    if salesGrowthRect != fitz.Rect(0,0,0,0):
+        salesGrowthRect = fitz.Rect(salesGrowthRect.x0+82,salesGrowthRect.y0+2,salesGrowthRect.x0+135,salesGrowthRect.y1-3)
+    else:
+        salesGrowthRect = search_for("Revenue", leftRect, page)
+        salesGrowthRect = fitz.Rect(salesGrowthRect.x0+82,salesGrowthRect.y0+2,salesGrowthRect.x0+135,salesGrowthRect.y1-3)
+    
+    return (projectedSalesRect, salesRect, earningsPerShareRect,netProfitRect, debtRect, marketCapRect, earningsRect, salesGrowthRect)
 
 def get_text(page: fitz.Page):
     timelinessText = page.get_textbox(timelinessRect).splitlines()
@@ -160,8 +164,9 @@ def get_text(page: fitz.Page):
         print("\033[91mError:\033[0m rating was not able to be extracted")
         rating = "error"
 
-    (debt, marketCap, salesGrowth, earningsGrowth, debtRaw, marketCapRaw, debtRectangle, marketCapRectangle, salesRectangle, earningsRectangle) = get_left_text(page, leftRect)
-    (projectedSales, salesConsecutiveGrowth, earningsPerShareConsecutiveGrowth, netProfitConsecutiveGrowth, projectedSalesRaw,salesRaw, earningsPerShareRaw, netProfitRaw, projectedSalesRect, salesRect,earningsPerShareRect,netProfitRect) = get_right_text(page)
+    (projectedSalesRect, salesRect, earningsPerShareRect,netProfitRect, debtRect, marketCapRect, earningsRect, salesGrowthRect) = get_rectangles(page)
+    (debt, marketCap, salesGrowth, earningsGrowth, debtRaw, marketCapRaw) = get_left_text(page, debtRect, marketCapRect, salesGrowthRect, earningsRect)
+    (projectedSales, salesConsecutiveGrowth, earningsPerShareConsecutiveGrowth, netProfitConsecutiveGrowth, projectedSalesRaw, salesRaw, earningsPerShareRaw, netProfitRaw) = get_right_text(page, projectedSalesRect, salesRect, earningsPerShareRect, netProfitRect)
 
     print("")
     print("Q2  - timeliness ")
@@ -182,20 +187,20 @@ def get_text(page: fitz.Page):
     print(debt)
     print(debtRaw)
     try:
-        page.add_highlight_annot(debtRectangle)
+        page.add_highlight_annot(debtRect)
     except ValueError:
         print("\033[91mError:\033[0m Debt Rectangle is invalid, debt was probably not found")
-    add_text_annot_above(str(debt) + " bill",debtRectangle,page)
+    add_text_annot_above(str(debt) + " bill",debtRect,page)
 
     print("")
     print("Q4b - market cap ")
     print(marketCap)
     print(marketCapRaw)
     try:
-        page.add_highlight_annot(marketCapRectangle)
+        page.add_highlight_annot(marketCapRect)
     except ValueError:
         print("\033[91mError:\033[0m Market Cap Rectangle is invalid, market cap was probably not found")
-    add_text_annot_above(str(marketCap) + " bill",marketCapRectangle,page)
+    add_text_annot_above(str(marketCap) + " bill",marketCapRect,page)
 
     print("")
     print("Q5  - beta")
@@ -209,10 +214,10 @@ def get_text(page: fitz.Page):
     print(salesGrowth[0])
     print(salesGrowth)
     try:
-        page.add_highlight_annot(salesRectangle)
+        page.add_highlight_annot(salesGrowthRect)
     except ValueError:
         print("\033[91mError:\033[0m Sales Growth Rectangle is invalid, sales growth was probably not found")
-    add_text_annot_above(salesGrowth[0], salesRectangle, page)
+    add_text_annot_above(salesGrowth[0], salesGrowthRect, page)
 
     print("")
     print("Q6b - years of consecutive sales growth")
@@ -231,10 +236,10 @@ def get_text(page: fitz.Page):
     print(earningsGrowth[0])
     print(earningsGrowth)
     try:
-        page.add_highlight_annot(earningsRectangle)
+        page.add_highlight_annot(earningsRect)
     except ValueError:
         print("\033[91mError:\033[0m Earnings Growth Rectangle is invalid, earnings growth was probably not found")
-    add_text_annot_above(earningsGrowth[0], earningsRectangle, page)
+    add_text_annot_above(earningsGrowth[0], earningsRect, page)
 
     print("")
     print("Q6d - years of consecutive earnings growth")
@@ -262,13 +267,13 @@ def get_text(page: fitz.Page):
     print("Q6f - %projected growth in sales")
     print(salesGrowth[1])
     print(salesGrowth)
-    add_text_annot_above(salesGrowth[1], fitz.Rect(salesRectangle.x0 + 30,salesRectangle.y0,salesRectangle.x1 + 30,salesRectangle.y1), page)
+    add_text_annot_above(salesGrowth[1], fitz.Rect(salesGrowthRect.x0 + 30,salesGrowthRect.y0,salesGrowthRect.x1 + 30,salesGrowthRect.y1), page)
 
     print("")
     print("Q6g - %projected growth in earnings")
     print(earningsGrowth[1])
     print(earningsGrowth)
-    add_text_annot_above(earningsGrowth[1], fitz.Rect(earningsRectangle.x0 + 30,earningsRectangle.y0,earningsRectangle.x1 + 30,earningsRectangle.y1), page)
+    add_text_annot_above(earningsGrowth[1], fitz.Rect(earningsRect.x0 + 30,earningsRect.y0,earningsRect.x1 + 30,earningsRect.y1), page)
 
     print("")
     print("Q7a - consecutive net profit growth")
@@ -294,6 +299,7 @@ def get_text(page: fitz.Page):
 doc1name = "/home/vlada/Desktop/VL KO 2301.pdf"
 doc2name = "/home/vlada/Desktop/VL META 2302.pdf"
 doc3name = "/home/vlada/Desktop/VL ANF 2301.pdf"
+doc1name = "/home/vlada/Desktop/blank.pdf"
 
 doc1 = fitz.open(doc1name)  # any supported document type
 doc2 = fitz.open(doc2name)
