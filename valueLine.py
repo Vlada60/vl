@@ -1,4 +1,5 @@
 from typing import List
+import vlTypes
 import fitz
 
 def search_for(text, rectangle: fitz.Rect, page: fitz.Page) -> fitz.Rect:
@@ -135,7 +136,7 @@ def get_rectangles(page: fitz.Page) -> tuple[fitz.Rect,fitz.Rect,fitz.Rect,fitz.
     
     return (projectedSalesRect, salesRect, earningsPerShareRect,netProfitRect, debtRect, marketCapRect, earningsRect, salesGrowthRect)
 
-def get_text(page: fitz.Page):
+def get_data(page: fitz.Page) -> tuple[vlTypes.Quallity, vlTypes.Price]:
     timelinessText = page.get_textbox(timelinessRect).splitlines()
     try:
         timeliness = timelinessText[0].lstrip().rstrip()
@@ -293,6 +294,12 @@ def get_text(page: fitz.Page):
     print(ratingText)
     page.add_highlight_annot(ratingRect)
     add_text_annot_above(rating, ratingRect, page)
+
+    quality = vlTypes.Quallity(timeliness, safety, debt, marketCap, beta, salesGrowth[0], salesConsecutiveGrowth, earningsGrowth[0], earningsPerShareConsecutiveGrowth, projectedSales, salesGrowth[1], earningsGrowth[1], netProfitConsecutiveGrowth, "", rating)
+
+    price = vlTypes.Price("", "", "", "", salesGrowth[0], earningsGrowth[0], salesGrowth[1], earningsGrowth[1], "", "", "", earningsPerShareRaw, "", "", "")
+
+    return (quality, price)
 
     
 timelinessRect = fitz.Rect(88,55,90,60)
