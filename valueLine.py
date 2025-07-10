@@ -266,6 +266,9 @@ def get_data(page: fitz.Page) -> tuple[vlTypes.Quallity, vlTypes.Price]:
         except IndexError:
             avgAnnualPE.append("error")
 
+    business = page.get_textbox(businessRect).replace('\n',' ').replace('- ','')
+    analysis = page.get_textbox(analysisRect).replace('\n',' ').replace('- ','')
+
 
     print("")
     print("Q2  - timeliness ")
@@ -471,7 +474,13 @@ def get_data(page: fitz.Page) -> tuple[vlTypes.Quallity, vlTypes.Price]:
         print("\033[91mError:\033[0m Book value per share rectangle is invalid, book value per share was probably not found")
     add_text_annot_above(bookValuePerSH, bookValuePSRect, page)
 
-    quality = vlTypes.Quallity(timeliness, safety, debt, marketCap, beta, salesGrowth[0], salesConsecutiveGrowth, earningsGrowth[0], earningsPerShareConsecutiveGrowth, projectedSales, salesGrowth[1], earningsGrowth[1], netProfitConsecutiveGrowth, "", rating)
+    page.add_highlight_annot(businessRect)
+
+    print(business)
+    print("")
+    print(analysis)
+
+    quality = vlTypes.Quallity(timeliness, safety, debt, marketCap, beta, salesGrowth[0], salesConsecutiveGrowth, earningsGrowth[0], earningsPerShareConsecutiveGrowth, projectedSales, salesGrowth[1], earningsGrowth[1], netProfitConsecutiveGrowth, [business, analysis], rating)
 
     price = vlTypes.Price("", earningsPSFY, quarterlyDividents, anlTotalReturn, salesGrowth[0], earningsGrowth[0], salesGrowth[1], earningsGrowth[1], avgAnnualPE, pe, [highPrice, lowPrice], earningsPerShareRaw, projectedEarningsPS, priceProjection, bookValuePerSH)
 
@@ -489,3 +498,5 @@ topRect = fitz.Rect(141,53,308,62)
 anlTotalReturnRect = fitz.Rect(115,155,135,157)
 priceProjectionRect = fitz.Rect(64, 155, 80, 165)
 bottomLeftRect = fitz.Rect(68, 590, 165, 690)
+businessRect = fitz.Rect(187, 425, 570, 475)
+analysisRect = fitz.Rect(187, 475, 570, 722)
