@@ -21,14 +21,24 @@ docNames.append("./tests/VL TSCO 2503.pdf")
 docNames.append("./tests/VL VZ 2506.pdf")
 blankdocname = "./tests/blank.pdf"
 
-for docName in docNames:
-    print("")
-    print(docName.split('/')[2])
-    doc = fitz.open(docName)
-    page = doc[0]
-    (quallity, price) = valueLine.get_data(page)
-    doc.save(docName.rstrip(".pdf") + "-tmp.pdf")
+doAll = True
 
 blankdoc = fitz.open(blankdocname)
 page = blankdoc[0]
 (quallity, price) = valueLine.get_data(page)
+blankdoc.save(blankdocname.rstrip(".pdf") + "-tmp.pdf")
+
+if doAll:
+    for docName in docNames:
+        print("")
+        print(docName.split('/')[2])
+        doc = fitz.open(docName)
+        page = doc[0]
+        (quallity, price) = valueLine.get_data(page)
+        doc.save(docName.rstrip(".pdf") + "-tmp.pdf")
+
+# docname = docNames[1]
+# doc = fitz.open(docname)
+# page = doc[0]
+# (quallity, price) = valueLine.get_data(page)
+# doc.save(docname.rstrip(".pdf") + "-tmp.pdf")

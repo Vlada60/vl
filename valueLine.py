@@ -212,6 +212,8 @@ def get_rectangles(page: fitz.Page) -> tuple[fitz.Rect,fitz.Rect,fitz.Rect,fitz.
     salesHeight = search_for("Revenues (", rightRect, page)
     if salesHeight == fitz.Rect(0,0,0,0):
         salesHeight = search_for("Sales (", rightRect, page)
+    if salesHeight == fitz.Rect(0,0,0,0):
+        salesHeight = search_for("P/C Premium", rightRect, page)
     earningsPerShareHeight = search_for("Earnings per sh", rightRect, page)
     netProfitHeight = search_for("Net Profit (", rightRect, page)
     bookValuePSHeight = search_for("Book Value per sh", rightRect, page) 
@@ -232,23 +234,28 @@ def get_rectangles(page: fitz.Page) -> tuple[fitz.Rect,fitz.Rect,fitz.Rect,fitz.
     earningsRect = search_for("Earnings", leftRect, page)
     earningsRect = fitz.Rect(earningsRect.x0+82,earningsRect.y0+2,earningsRect.x0+135,earningsRect.y1-3)
     salesGrowthRect = search_for("Sales", leftRect, page)
-    if salesGrowthRect != fitz.Rect(0,0,0,0):
-        salesGrowthRect = fitz.Rect(salesGrowthRect.x0+82,salesGrowthRect.y0+2,salesGrowthRect.x0+135,salesGrowthRect.y1-3)
-    else:
+    if salesGrowthRect == fitz.Rect(0,0,0,0):
         salesGrowthRect = search_for("Revenue", leftRect, page)
-        salesGrowthRect = fitz.Rect(salesGrowthRect.x0+82,salesGrowthRect.y0+2,salesGrowthRect.x0+135,salesGrowthRect.y1-3)
+    if salesGrowthRect == fitz.Rect(0,0,0,0):
+        salesGrowthRect = search_for("Premium", leftRect, page)
+    salesGrowthRect = fitz.Rect(salesGrowthRect.x0+82,salesGrowthRect.y0+2,salesGrowthRect.x0+135,salesGrowthRect.y1-3)
 
     highPriceRect = search_for("High:", topRect, page) 
     highPriceRect = fitz.Rect(312, highPriceRect.y0, 427, highPriceRect.y1)
     lowPriceRect = fitz.Rect(highPriceRect.x0,highPriceRect.y1 + 2,highPriceRect.x1,highPriceRect.y1 + 6)
 
-    earningsPerShareTextRect = search_for("EARNINGS PER SHARE", bottomLeftRect, page)
-    earningsPSFYRect = fitz.Rect(165, earningsPerShareTextRect.y1 + 36, 188, earningsPerShareTextRect.y1 + 40)
+    year = page.get_textbox(yearRect).lstrip().rstrip()
+    if year == "":
+        year = "3000"
+    epsYearHeight = search_for(year, epsYearRect, page)
+    dividentsYearHeight = search_for(year, dividentsYearRect, page)
 
-    quarterlyDividentsTextRect = search_for("QUARTERLY DIVIDENDS PAID", bottomLeftRect, page)
-    quarterlyDividentsRect = fitz.Rect(165, quarterlyDividentsTextRect.y1 + 36, 188, quarterlyDividentsTextRect.y1 + 40)
+    # earningsPerShareTextRect = search_for("EARNINGS PER SHARE", bottomLeftRect, page)
+    earningsPSFYRect = fitz.Rect(165, epsYearHeight.y0 + 1, 188, epsYearHeight.y1 - 1)
+    # quarterlyDividentsTextRect = search_for("QUARTERLY DIVIDENDS PAID", bottomLeftRect, page)
+    quarterlyDividentsRect = fitz.Rect(165, dividentsYearHeight.y0 + 1, 188, dividentsYearHeight.y1 - 1)
     
-    hasDividents = search_for("NO CASH DIVIDENDS", fitz.Rect(70,180,165,722), page) == fitz.Rect(0,0,0,0)
+    hasDividents = search_for("NO CASH DIVIDENDS", fitz.Rect(70,180,165,722), page) == fitz.Rect(0,0,0,0) and quarterlyDividentsRect != fitz.Rect(165.0, 1.0, 188.0, -1.0)
     
     return (projectedSalesRect, salesRect, earningsPerShareRect,netProfitRect, debtRect, marketCapRect, earningsRect, salesGrowthRect, highPriceRect, lowPriceRect, projectedEarningsPSRect, bookValuePSRect, avgAnnualPERect, earningsPSFYRect, quarterlyDividentsRect, hasDividents)
 
@@ -400,7 +407,10 @@ def get_data(page: fitz.Page) -> tuple[vlTypes.Quallity, vlTypes.Price]:
     print("P2A  - earnings per share last year")
     print(earningsPSFY)
     print(earningsPSFYRaw)
-    page.add_highlight_annot(earningsPSFYRect)
+    try:
+        page.add_highlight_annot(earningsPSFYRect)
+    except ValueError:
+        print("\033[91mError:\033[0m Earnings per share in the last fiscal year rectangle is invalid, earnings per share in the last fiscal year is probably not found")
     add_text_annot_above(earningsPSFY, earningsPSFYRect, page)
 
     print("")
@@ -500,3 +510,6 @@ priceProjectionRect = fitz.Rect(64, 155, 80, 165)
 bottomLeftRect = fitz.Rect(68, 590, 165, 690)
 businessRect = fitz.Rect(187, 425, 570, 475)
 analysisRect = fitz.Rect(187, 475, 570, 722)
+yearRect = fitz.Rect(405, 203, 428, 211)
+epsYearRect = fitz.Rect(45, 613, 68, 665)
+dividentsYearRect = fitz.Rect(45, 665, 68, 722)
