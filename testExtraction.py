@@ -1,31 +1,34 @@
 import valueLine
 import fitz
 
-doc1name = "/home/vlada/Desktop/VL KO 2301.pdf"
-doc2name = "/home/vlada/Desktop/VL META 2302.pdf"
-doc3name = "/home/vlada/Desktop/VL ANF 2301.pdf"
-doc1name = "/home/vlada/Desktop/blank.pdf"
+docNames: list[str] = []
 
-doc1 = fitz.open(doc1name)  # any supported document type
-doc2 = fitz.open(doc2name)
-doc3 = fitz.open(doc3name)
+docNames.append("./tests/VL KO 2301.pdf")
+docNames.append("./tests/VL META 2302.pdf")
+docNames.append("./tests/VL ANF 2301.pdf")
+docNames.append("./tests/VL HBI 2504.pdf")
+docNames.append("./tests/VL JBL 2503.pdf")
+docNames.append("./tests/VL KO 2504.pdf")
+docNames.append("./tests/VL LKQ 2506.pdf")
+docNames.append("./tests/VL MCD 2505.pdf")
+docNames.append("./tests/VL MRVL 2503.pdf")
+docNames.append("./tests/VL NKE 2504.pdf")
+docNames.append("./tests/VL SIGI 2505.pdf")
+docNames.append("./tests/VL SMCI 2506.pdf")
+docNames.append("./tests/VL TECH 2505.pdf")
+docNames.append("./tests/VL TRU 2505.pdf")
+docNames.append("./tests/VL TSCO 2503.pdf")
+docNames.append("./tests/VL VZ 2506.pdf")
+blankdocname = "./tests/blank.pdf"
 
-page1 = doc1[0]
-page2 = doc2[0]
-page3 = doc3[0]
+for docName in docNames:
+    print("")
+    print(docName.split('/')[2])
+    doc = fitz.open(docName)
+    page = doc[0]
+    (quallity, price) = valueLine.get_data(page)
+    doc.save(docName.rstrip(".pdf") + "-tmp.pdf")
 
-
-# Now we have the rectangle ---------------------------------------------------
-print("")
-print("Coca cola:")
-valueLine.get_data(page1)
-print("")
-print("Meta:")
-valueLine.get_data(page2)
-print("")
-print("ABERCROMBIE:")
-valueLine.get_data(page3)
-
-doc1.save(doc1name.rstrip(".pdf") + "-tmp.pdf")
-doc2.save(doc2name.rstrip(".pdf") + "-tmp.pdf")
-doc3.save(doc3name.rstrip(".pdf") + "-tmp.pdf")
+blankdoc = fitz.open(blankdocname)
+page = blankdoc[0]
+(quallity, price) = valueLine.get_data(page)

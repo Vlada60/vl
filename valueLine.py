@@ -26,7 +26,7 @@ def get_left_text(page: fitz.Page, debtRect: fitz.Rect, marketCapRect: fitz.Rect
         debt = debtRaw[0].split("$")[1]
         debt = text_millions_to_number(debt)
     except:
-        print("\033[91mError:\033[0m Debt was not able to be extracted")
+        print("\033[91mError:\033[0m Debt could not be extracted")
         debt = -1
 
     marketCapRaw = page.get_textbox(marketCapRect).splitlines()
@@ -34,7 +34,7 @@ def get_left_text(page: fitz.Page, debtRect: fitz.Rect, marketCapRect: fitz.Rect
         marketCap = marketCapRaw[0].split("$")[1]
         marketCap = text_millions_to_number(marketCap)
     except:
-        print("\033[91mError:\033[0m Market Cap was not able to be extracted")
+        print("\033[91mError:\033[0m Market Cap could not be extracted")
         marketCap = -1
 
     salesGrowth = []
@@ -93,14 +93,14 @@ def get_right_text(page: fitz.Page, projectedSalesRect: fitz.Rect, projectedEarn
     try:
         projectedSales = projectedSalesRaw[0].lstrip().rstrip()
     except:
-        print("\033[91mError:\033[0m Debt was not able to be extracted")
+        print("\033[91mError:\033[0m Projected sales could not be extracted")
         projectedSales = "error"
         
     projectedEarningsPSRaw = page.get_textbox(projectedEarningsPSRect).splitlines()
     try:
         projectedEarningsPS = projectedEarningsPSRaw[0].lstrip().rstrip()
     except:
-        print("\033[91mError:\033[0m Projected earnings per share was not able to be extracted")
+        print("\033[91mError:\033[0m Projected earnings per share could not be extracted")
         projectedEarningsPS = "error"
 
     salesRaw = page.get_textbox(salesRect).splitlines()
@@ -116,7 +116,7 @@ def get_right_text(page: fitz.Page, projectedSalesRect: fitz.Rect, projectedEarn
     try:
         bookValuePerSH = bookValuePerSHRaw[0].lstrip().rstrip()
     except:
-        print("\033[91mError:\033[0m Debt was not able to be extracted")
+        print("\033[91mError:\033[0m Book value per sh could not be extracted")
         bookValuePerSH = "error"
 
     avgAnnualPE = page.get_textbox(avgAnnualPERect).splitlines()
@@ -128,7 +128,7 @@ def get_top_text(page: fitz.Page, highPriceRect: fitz.Rect, lowPriceRect: fitz.R
     try:
         pe = peRaw[0].lstrip().rstrip()
     except IndexError:
-        print("\033[91mError:\033[0m P/E ratio was not able to be extracted")
+        print("\033[91mError:\033[0m P/E ratio could not be extracted")
         pe = "error"
 
     highPrice = page.get_textbox(highPriceRect).splitlines()
@@ -141,35 +141,35 @@ def get_top_left_text(page: fitz.Page) -> tuple[str, str, str, str, str, list[st
     try:
         timeliness = timelinessRaw[0].lstrip().rstrip()
     except IndexError:
-        print("\033[91mError:\033[0m timeliness was not able to be extracted")
+        print("\033[91mError:\033[0m timeliness could not be extracted")
         timeliness = "error"
 
     safetyRaw = page.get_textbox(safetyRect).splitlines()
     try:
         safety = safetyRaw[0].lstrip().rstrip()
     except IndexError:
-        print("\033[91mError:\033[0m safety was not able to be extracted")
+        print("\033[91mError:\033[0m safety could not be extracted")
         safety = "error"
 
     betaRaw = page.get_textbox(betaRect).splitlines()
     try:
         beta = betaRaw[0].lstrip().rstrip()
     except IndexError:
-        print("\033[91mError:\033[0m beta was not able to be extracted")
+        print("\033[91mError:\033[0m beta could not be extracted")
         beta = "error"
 
     ratingRaw = page.get_textbox(ratingRect).splitlines()
     try:
         rating = ratingRaw[0].lstrip().rstrip()
     except IndexError:
-        print("\033[91mError:\033[0m rating was not able to be extracted")
+        print("\033[91mError:\033[0m rating could not be extracted")
         rating = "error"
 
     anlTotalReturn = page.get_textbox(anlTotalReturnRect).splitlines()
     try:
         anlTotalReturn = anlTotalReturn[0].lstrip().rstrip()
     except IndexError:
-        print("\033[91mError:\033[0m Annual Total Return was not able to be extracted")
+        print("\033[91mError:\033[0m Annual Total Return could not be extracted")
         anlTotalReturn = "error"
 
     priceProjection = page.get_textbox(priceProjectionRect).splitlines()
@@ -177,7 +177,7 @@ def get_top_left_text(page: fitz.Page) -> tuple[str, str, str, str, str, list[st
         priceProjection[0] = priceProjection[0].lstrip().rstrip()
         priceProjection[1] = priceProjection[1].lstrip().rstrip()
     except IndexError:
-        print("\033[91mError:\033[0m Price Projection was not able to be extracted")
+        print("\033[91mError:\033[0m Price Projection could not be extracted")
         priceProjection = ["error", "error"]
 
     return (timeliness, safety, beta, rating, anlTotalReturn, priceProjection, timelinessRaw, safetyRaw, betaRaw, ratingRaw)
@@ -187,7 +187,7 @@ def get_bottom_left(page: fitz.Page, earningsPSFYRect: fitz.Rect ,quarterlyDivid
     try:
         earningsPSFY = earningsPSFYRaw[0].lstrip().rstrip()
     except IndexError:
-        print("\033[91mError:\033[0m Earnings per share in the last fiscal year was not able to be extracted")
+        print("\033[91mError:\033[0m Earnings per share in the last fiscal year could not be extracted")
         earningsPSFY = "error"
 
     quarterlyDividentsRaw = 0;
@@ -196,7 +196,7 @@ def get_bottom_left(page: fitz.Page, earningsPSFYRect: fitz.Rect ,quarterlyDivid
         try:
             quarterlyDividents = quarterlyDividentsRaw[0].lstrip().rstrip()
         except IndexError:
-            print("\033[91mError:\033[0m quarterly dividents was not able to be extracted")
+            print("\033[91mError:\033[0m quarterly dividents could not be extracted")
             quarterlyDividents = "error"
     else: quarterlyDividents = 0
 
