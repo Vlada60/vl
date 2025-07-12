@@ -72,8 +72,6 @@ def insert_to_sheets(quality: vlTypes.Quallity, price: vlTypes.Price):
         },
     ], value_input_option=ValueInputOption.user_entered)
 
-    text = "9"
-    number = "21"
     priceWorksheet.batch_update([
         {
             'range': 'M5:M6',
