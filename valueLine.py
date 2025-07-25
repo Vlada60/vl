@@ -108,6 +108,8 @@ def get_right_text(page: fitz.Page, projectedSalesRect: fitz.Rect, projectedEarn
         
     earningsPerShareRaw = page.get_textbox(earningsPerShareRect).splitlines() 
     earningsPerShareConsecutiveGrowth = consecutive_growth(earningsPerShareRaw)
+    while(len(earningsPerShareRaw) < 5):
+          earningsPerShareRaw.append("error")
 
     netProfitRaw = page.get_textbox(netProfitRect).splitlines()
     netProfitConsecutiveGrowth = consecutive_growth(netProfitRaw)
@@ -132,7 +134,11 @@ def get_top_text(page: fitz.Page, highPriceRect: fitz.Rect, lowPriceRect: fitz.R
         pe = "error"
 
     highPrice = page.get_textbox(highPriceRect).splitlines()
+    while(len(highPrice) < 5):
+          highPrice.append("error")
     lowPrice = page.get_textbox(lowPriceRect).splitlines()
+    while(len(lowPrice) < 5):
+          lowPrice.append("error")
 
     return (pe, peRaw, highPrice, lowPrice)
 
@@ -496,7 +502,12 @@ def get_data(page: fitz.Page) -> tuple[vlTypes.Quallity, vlTypes.Price]:
 
     return (quality, price)
 
-    
+def extract_with_path(path) -> tuple[vlTypes.Quallity, vlTypes.Price]:
+    doc = fitz.open(path)
+    page = doc[0]
+    (quality, price) = get_data(page)
+    return (quality, price)
+
 timelinessRect = fitz.Rect(88,55,90,60)
 safetyRect = fitz.Rect(88,68,90,74) 
 betaRect = fitz.Rect(62,91.5,75,97.5) 
