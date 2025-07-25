@@ -53,14 +53,26 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>472</width>
-               <height>737</height>
+               <width>451</width>
+               <height>918</height>
               </rect>
              </property>
              <layout class="QFormLayout" name="formLayout">
               <property name="sizeConstraint">
                <enum>QLayout::SizeConstraint::SetDefaultConstraint</enum>
               </property>
+              <item row="1" column="1">
+               <widget class="QLabel" name="label">
+                <property name="font">
+                 <font>
+                  <pointsize>12</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Quality</string>
+                </property>
+               </widget>
+              </item>
               <item row="2" column="0">
                <widget class="QLabel" name="q1Label">
                 <property name="text">
@@ -171,54 +183,54 @@
               <item row="9" column="1">
                <widget class="QLineEdit" name="q7LineEdit"/>
               </item>
-              <item row="10" column="0">
+              <item row="12" column="0">
                <widget class="QLabel" name="q8Label">
                 <property name="text">
                  <string>Q8 - Rating</string>
                 </property>
                </widget>
               </item>
-              <item row="10" column="1">
+              <item row="12" column="1">
                <widget class="QLineEdit" name="q8LineEdit"/>
               </item>
-              <item row="11" column="0">
+              <item row="13" column="0">
                <widget class="QLabel" name="p2aLabel">
                 <property name="text">
                  <string>P2a - Earnings PS</string>
                 </property>
                </widget>
               </item>
-              <item row="11" column="1">
+              <item row="13" column="1">
                <widget class="QLineEdit" name="p2aLineEdit"/>
               </item>
-              <item row="14" column="0">
+              <item row="16" column="0">
                <widget class="QLabel" name="p2bLabel">
                 <property name="text">
                  <string>P2b - Dividents</string>
                 </property>
                </widget>
               </item>
-              <item row="14" column="1">
+              <item row="16" column="1">
                <widget class="QLineEdit" name="p2bLineEdit"/>
               </item>
-              <item row="15" column="0">
+              <item row="17" column="0">
                <widget class="QLabel" name="p3Label">
                 <property name="text">
                  <string>P3 - Ann'l Return</string>
                 </property>
                </widget>
               </item>
-              <item row="15" column="1">
+              <item row="17" column="1">
                <widget class="QLineEdit" name="p3LineEdit"/>
               </item>
-              <item row="16" column="0">
+              <item row="18" column="0">
                <widget class="QLabel" name="p5aLabel">
                 <property name="text">
                  <string>P5a - P/E last 5y</string>
                 </property>
                </widget>
               </item>
-              <item row="16" column="1">
+              <item row="18" column="1">
                <layout class="QHBoxLayout" name="p5a">
                 <item>
                  <widget class="QLineEdit" name="p5aLineEdit_y1"/>
@@ -237,24 +249,24 @@
                 </item>
                </layout>
               </item>
-              <item row="17" column="0">
+              <item row="19" column="0">
                <widget class="QLabel" name="p5bLabel">
                 <property name="text">
                  <string>P5b - Current P/E</string>
                 </property>
                </widget>
               </item>
-              <item row="17" column="1">
+              <item row="19" column="1">
                <widget class="QLineEdit" name="p5bLineEdit"/>
               </item>
-              <item row="18" column="0">
+              <item row="20" column="0">
                <widget class="QLabel" name="p6aLabel">
                 <property name="text">
                  <string>P6a - Price High</string>
                 </property>
                </widget>
               </item>
-              <item row="18" column="1">
+              <item row="20" column="1">
                <layout class="QHBoxLayout" name="p6a">
                 <item>
                  <widget class="QLineEdit" name="p6aLineEdit_y1"/>
@@ -273,14 +285,14 @@
                 </item>
                </layout>
               </item>
-              <item row="19" column="0">
+              <item row="21" column="0">
                <widget class="QLabel" name="p6aLabelLow">
                 <property name="text">
                  <string>P6a - Price Low</string>
                 </property>
                </widget>
               </item>
-              <item row="19" column="1">
+              <item row="21" column="1">
                <layout class="QHBoxLayout" name="p6a_low">
                 <item>
                  <widget class="QLineEdit" name="p6aLineEdit_y1_low"/>
@@ -299,14 +311,14 @@
                 </item>
                </layout>
               </item>
-              <item row="20" column="0">
+              <item row="22" column="0">
                <widget class="QLabel" name="p6bLabel">
                 <property name="text">
                  <string>P6b - EPS last 5y</string>
                 </property>
                </widget>
               </item>
-              <item row="20" column="1">
+              <item row="22" column="1">
                <layout class="QHBoxLayout" name="p6b">
                 <item>
                  <widget class="QLineEdit" name="p6bLineEdit_y1"/>
@@ -325,29 +337,17 @@
                 </item>
                </layout>
               </item>
-              <item row="21" column="0">
+              <item row="23" column="0">
                <widget class="QLabel" name="p6cLabel">
                 <property name="text">
                  <string>P6c - Projected EPS</string>
                 </property>
                </widget>
               </item>
-              <item row="21" column="1">
+              <item row="23" column="1">
                <widget class="QLineEdit" name="p6cLineEdit"/>
               </item>
-              <item row="1" column="1">
-               <widget class="QLabel" name="label">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>Quality</string>
-                </property>
-               </widget>
-              </item>
-              <item row="13" column="1">
+              <item row="15" column="1">
                <widget class="QLabel" name="label_2">
                 <property name="font">
                  <font>
@@ -358,6 +358,12 @@
                  <string>Price</string>
                 </property>
                </widget>
+              </item>
+              <item row="10" column="1">
+               <widget class="QTextEdit" name="q7TextEdit"/>
+              </item>
+              <item row="11" column="1">
+               <widget class="QTextEdit" name="q7TextEdit_analysis"/>
               </item>
              </layout>
             </widget>
@@ -404,6 +410,7 @@
    <addaction name="actionAdd_Files"/>
    <addaction name="actionUpload_to_sheets"/>
    <addaction name="actionExtract_Data"/>
+   <addaction name="actionLog_In"/>
   </widget>
   <action name="actionAdd_Files">
    <property name="checkable">
@@ -451,6 +458,14 @@
    </property>
    <property name="text">
     <string>Extract Data</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::MenuRole::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionLog_In">
+   <property name="text">
+    <string>Log In</string>
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::NoRole</enum>

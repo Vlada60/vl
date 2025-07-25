@@ -2,7 +2,16 @@ from gspread.utils import ValueInputOption
 import vlTypes
 import gspread
 
-gc = gspread.oauth(credentials_filename="./credentials.json")
+gc = gspread.oauth(
+    credentials_filename="./credentials.json",
+    authorized_user_filename='./authorized_user.json'
+)
+
+def authenticate():
+    gc = gspread.oauth(
+        credentials_filename="./credentials.json",
+        authorized_user_filename='./authorized_user.json'
+    )
 
 def insert_to_sheets(quality: vlTypes.Quallity, price: vlTypes.Price):
     try:
